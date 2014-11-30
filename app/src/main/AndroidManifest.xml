@@ -20,6 +20,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <provider
+            android:name="ru.ifmo.md.lesson8.WeatherContentProvider"
+            android:authorities="ru.ifmo.md.lesson8.WeatherContentProvider"
+            android:enabled="true"
+            android:exported="true">
+        </provider>
+
+        <service android:name="ru.ifmo.md.lesson8.WeatherLoaderService"/>
     </application>
 
 </manifest>

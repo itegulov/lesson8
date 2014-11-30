@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class WeatherDatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "weather_db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
 
     public static final String CITY_TABLE_NAME = "city";
     public static final String CITY_ID = "_id";
@@ -57,6 +57,14 @@ public class WeatherDatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues cv = new ContentValues();
         cv.put(CITY_NAME, "Saint-Petersburg");
+        sqLiteDatabase.insert(CITY_TABLE_NAME, null, cv);
+
+        cv = new ContentValues();
+        cv.put(CITY_NAME, "Moscow");
+        sqLiteDatabase.insert(CITY_TABLE_NAME, null, cv);
+
+        cv = new ContentValues();
+        cv.put(CITY_NAME, "Uralsk");
         sqLiteDatabase.insert(CITY_TABLE_NAME, null, cv);
     }
 

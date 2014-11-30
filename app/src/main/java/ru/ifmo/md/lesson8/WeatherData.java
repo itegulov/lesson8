@@ -74,4 +74,19 @@ public class WeatherData {
         cv.put(WeatherDatabaseHelper.WEATHER_DATE, date);
         return cv;
     }
+
+    @Override
+    public String toString() {
+        return "WeatherData{" +
+                "temperatureMin=" + temperatureMin +
+                ", temperatureMax=" + temperatureMax +
+                ", temperature=" + temperature +
+                ", windSpeed=" + windSpeed +
+                ", humidity=" + humidity +
+                ", pressure=" + pressure +
+                ", date=" + date +
+                ", cityId=" + cityId +
+                ", weatherInfo=" + weatherInfo +
+                '}';
+    }
 }

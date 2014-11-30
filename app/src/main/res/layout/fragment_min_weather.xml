@@ -7,19 +7,18 @@
               android:weightSum="1">
 
     <Space
-        android:layout_width="20px"
-        android:layout_height="20px"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
         />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:background="#ff563fff"
                   android:orientation="vertical"
                   android:weightSum="1">
 
         <TextView
-            android:id="@+id/textView11"
+            android:id="@+id/dayTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -29,7 +28,7 @@
             android:textStyle="bold"/>
 
         <TextView
-            android:id="@+id/textView12"
+            android:id="@+id/dateTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -38,22 +37,22 @@
             android:textSize="@dimen/abc_text_size_medium_material"/>
 
         <Space
-            android:layout_width="20px"
-            android:layout_height="20px"/>
+            android:layout_width="10dp"
+            android:layout_height="10dp"/>
 
         <ImageView
-            android:id="@+id/imageView3"
+            android:id="@+id/weatherIcon"
             android:layout_width="60dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_gravity="center_horizontal"
-            android:src="@drawable/sun94"/>
+            android:contentDescription="@string/weather_icon"/>
 
         <Space
-            android:layout_width="20px"
-            android:layout_height="20px"/>
+            android:layout_width="10dp"
+            android:layout_height="10dp"/>
 
         <TextView
-            android:id="@+id/textView13"
+            android:id="@+id/temperatureTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -63,7 +62,7 @@
     </LinearLayout>
 
     <Space
-        android:layout_width="20px"
-        android:layout_height="20px"/>
+        android:layout_width="10dp"
+        android:layout_height="10dp"/>
 
 </LinearLayout>

@@ -6,5 +6,10 @@
     <string name="title_activity_weather">Weather</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="weather_icon">icon</string>
+    <string name="separatorContent">separatorContent</string>
+    <string name="humidity">HUMIDITY</string>
+    <string name="wind">WIND</string>
+    <string name="pressure">PRESSURE</string>
 
 </resources>
