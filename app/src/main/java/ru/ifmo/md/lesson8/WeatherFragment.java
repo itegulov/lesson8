@@ -23,6 +23,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,9 +32,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class WeatherFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    public static final String LOG_TAG = WeatherFragment.class.getSimpleName();
     public static final String CITY_ID_EXTRA = "city_id";
     public static final String CITY_NAME_EXTRA = "city_name";
 
@@ -42,23 +45,18 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     private WeatherDataAdapter adapter;
     private RecyclerView weatherRecycleView;
     private View mainView;
-    private int selectedDay = -1;
     private Handler handler;
     private boolean userRequestUpdate = false;
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        Log.d(LOG_TAG, "onCreateLoader() Fragment");
-        CursorLoader cursorLoader = new CursorLoader(getActivity(), WeatherContentProvider.WEATHER_CONTENT_URI, null,
+        return new CursorLoader(getActivity(), WeatherContentProvider.WEATHER_CONTENT_URI, null,
                 WeatherDatabaseHelper.WEATHER_CITY_ID + " = " + cityId, null,
                 WeatherDatabaseHelper.WEATHER_DATE + " asc");
-        Log.d(LOG_TAG, "Finish onCreateLoader() Fragment");
-        return cursorLoader;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        Log.d(LOG_TAG, "onLoadFinished() Fragment");
         if (adapter == null) {
             adapter = new WeatherDataAdapter(getActivity());
             adapter.setOnItemClickListener(new WeatherDataAdapter.OnItemClickListener() {
@@ -80,12 +78,12 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         }
         adapter.notifyDataSetChanged();
         setDescriptionWeather(0);
+        setMainWeather(0);
         adapter.setCurrentItem(0);
     }
 
-    public void setDescriptionWeather(int id) {
+    public void setMainWeather(int id) {
         WeatherData weatherData = adapter.getItem(id);
-        selectedDay = id;
         ((TextView) mainView.findViewById(R.id.temperatureTextView)).setText(
                 weatherData.getTemperatureMin() + "°C/" + weatherData.getTemperatureMax() + "°C");
         ((TextView) mainView.findViewById(R.id.pressureTextView)).setText(
@@ -106,16 +104,24 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
             getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
             Configuration config = getActivity().getResources().getConfiguration();
             mainView.findViewById(R.id.iconWeatherBig).setBackground(new BitmapDrawable(new Resources(manager, metrics, config), bitmap));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         }
     }
 
+    public void setDescriptionWeather(int id) {
+        WeatherData weatherData = adapter.getItem(id);
+        ((TextView) mainView.findViewById(R.id.dateMinTextView)).setText(new SimpleDateFormat("EEEE, MMM d").format(new Date(weatherData.getDate())));
+        ((TextView) mainView.findViewById(R.id.infoMinTextView)).setText(
+                "Temperature from " + weatherData.getTemperatureMin() +
+                        "°C to " + weatherData.getTemperatureMax() + "°C. " + "Wind speed is " +
+                        weatherData.getWindSpeed() + " m/s. " + "Pressure is " +
+                        weatherData.getPressure() + "." + (weatherData.getHumidity() == 0 ? "" :
+                        " Humidity is " + weatherData.getHumidity() + "%."));
+    }
+
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        Log.d(LOG_TAG, "onLoaderReset() Fragment");
         adapter = null;
         weatherRecycleView.setAdapter(null);
     }
@@ -123,15 +129,11 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     private boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-            return true;
-        }
-        return false;
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(LOG_TAG, "onCreate() Fragment");
         super.onCreate(savedInstanceState);
         cityId = getArguments().getInt(CITY_ID_EXTRA);
         cityName = getArguments().getString(CITY_NAME_EXTRA);
@@ -142,7 +144,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
             Toast.makeText(getActivity(), "Check your internet connection", Toast.LENGTH_SHORT).show();
         }
 
-        Log.d(LOG_TAG, "Create handler");
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -163,34 +164,34 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     public void startLoading(boolean userRequestUpdate) {
-        Log.d(LOG_TAG, "Start loading");
         this.userRequestUpdate = userRequestUpdate;
         WeatherLoaderService.loadCity(getActivity(), cityName);
     }
 
     public void stopLoading() {
-        Log.d(LOG_TAG, "Stop loading");
         getActivity().getActionBar().setSubtitle(null);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        /*
-        if (item.getItemId() == R.id.menu_item_refresh) {
+        if (item.getItemId() == R.id.menu_item_refresh_weather) {
             if (!isOnline())
                 Toast.makeText(getActivity(), "Check your internet connection", Toast.LENGTH_SHORT).show();
             else
                 startLoading(true);
         }
         return true;
-        */
-        return true;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_fragment_weather, menu);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d(LOG_TAG, "onCreateView()");
         View view = inflater.inflate(R.layout.fragment_weather, container, false);
         mainView = view;
         setHasOptionsMenu(true);
@@ -200,7 +201,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         if (adapter != null) {
             weatherRecycleView.setAdapter(adapter);
         } else {
-            Log.d(LOG_TAG, "Restart loader");
             getLoaderManager().restartLoader(24562, null, this);
         }
         return view;
@@ -211,7 +211,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         super.onResume();
 
         WeatherLoaderService.setHandler(handler);
-        Log.i(LOG_TAG, "onResume");
     }
 
     @Override

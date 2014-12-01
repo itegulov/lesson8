@@ -41,7 +41,7 @@ public class FetchWeatherTask {
 
             JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
             String weatherMain = weatherObject.getString(OWM_WEATHER_MAIN);
-            Log.d("FetchWeatherTask", weatherMain);
+            Log.d(LOG_TAG, weatherMain);
 
             JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
             int max = (int) Math.round(temperatureObject.getDouble(OWM_MAX));
@@ -58,7 +58,7 @@ public class FetchWeatherTask {
         return weatherData;
     }
 
-    public static WeatherData[] getWeatherInCity(City city, int numDays, String apiKey) {
+    public static WeatherData[] fetch(City city, int numDays, String apiKey) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String forecastJSONStr = null;

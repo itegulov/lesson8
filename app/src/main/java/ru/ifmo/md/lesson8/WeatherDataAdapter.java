@@ -10,7 +10,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +49,7 @@ public class WeatherDataAdapter extends RecyclerView.Adapter<WeatherDataAdapter.
 
     public void setCurrentItem(int newPos) {
         if (prevPos != newPos) {
-            if (prevPos != -1 && views.get(prevPos) != null) {
+            if (prevPos != -1 && prevPos < views.size() && views.get(prevPos) != null) {
                 views.get(prevPos).setBackgroundColor(0xff563fff);
             }
 
@@ -82,7 +81,6 @@ public class WeatherDataAdapter extends RecyclerView.Adapter<WeatherDataAdapter.
         weatherDataViewHolder.setDayTextView(new SimpleDateFormat("EEE").format(date).toUpperCase());
         AssetManager manager = parent.getAssets();
         try {
-            Log.d("WeatherIcons", currentWeatherData.getWeatherInfo().getIconName());
             Bitmap bitmap = BitmapFactory.decodeStream(manager.open(currentWeatherData.getWeatherInfo().getIconName()));
             DisplayMetrics metrics = new DisplayMetrics();
             parent.getWindowManager().getDefaultDisplay().getMetrics(metrics);

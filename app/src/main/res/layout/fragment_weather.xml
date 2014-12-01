@@ -13,7 +13,7 @@
     <ImageView
         android:id="@+id/iconWeatherBig"
         android:layout_width="128dp"
-        android:layout_height="128dp"
+        android:layout_height="100dp"
         android:layout_gravity="center_horizontal"
         android:contentDescription="@string/weather_icon"/>
 
@@ -139,8 +139,25 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/my_recycler_view"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="150dp"
         android:layout_gravity="top"
         android:background="#ff563fff"/>
+
+    <TextView
+        android:id="@+id/dateMinTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Moday, December 1"
+        android:textColor="#ff7da4ff"
+        android:textSize="@dimen/abc_text_size_large_material"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/infoMinTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Temperature from -6°C to 3°C. Wind speed is 2 m/s. Humidity is 37%"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/abc_text_size_medium_material"/>
 
 </LinearLayout>

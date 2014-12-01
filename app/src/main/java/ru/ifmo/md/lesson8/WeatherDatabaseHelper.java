@@ -76,20 +76,15 @@ public class WeatherDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static class CityCursor extends CursorWrapper {
-        private Cursor cursor;
 
         public CityCursor(Cursor cursor) {
             super(cursor);
-            this.cursor = cursor;
         }
 
         public static City getCity(Cursor cursor) {
             return new City(cursor.getInt(cursor.getColumnIndex(CITY_ID)), cursor.getString(cursor.getColumnIndex(CITY_NAME)), cursor.getLong(cursor.getColumnIndex(CITY_UPDATE_DATE)));
         }
 
-        public City getCity() {
-            return getCity(cursor);
-        }
     }
 
     public static class WeatherDataCursor extends CursorWrapper {
