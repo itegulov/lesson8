@@ -23,6 +23,10 @@ import java.util.Date;
 import java.util.List;
 
 public class WeatherDataAdapter extends RecyclerView.Adapter<WeatherDataAdapter.WeatherDataViewHolder> {
+    public static final int LIGHT_BLUE_COLOR = 0xff563fff;
+    public static final int DARK_BLUE_COLOR = 0xffaba0ff;
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d\\MMM");
+    public static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("EEE");
     private List<WeatherData> weatherData = new ArrayList<>();
     private ArrayList<View> views = new ArrayList<>();
     private Activity parent;
@@ -50,11 +54,11 @@ public class WeatherDataAdapter extends RecyclerView.Adapter<WeatherDataAdapter.
     public void setCurrentItem(int newPos) {
         if (prevPos != newPos) {
             if (prevPos != -1 && prevPos < views.size() && views.get(prevPos) != null) {
-                views.get(prevPos).setBackgroundColor(0xff563fff);
+                views.get(prevPos).setBackgroundColor(LIGHT_BLUE_COLOR);
             }
 
             if (views.get(newPos) != null) {
-                views.get(newPos).setBackgroundColor(0xffaba0ff);
+                views.get(newPos).setBackgroundColor(DARK_BLUE_COLOR);
             }
 
             prevPos = newPos;
@@ -77,8 +81,8 @@ public class WeatherDataAdapter extends RecyclerView.Adapter<WeatherDataAdapter.
         weatherDataViewHolder.setTemperature(
                 Integer.toString(currentWeatherData.getTemperature()) + "°C");
         Date date = new Date(currentWeatherData.getDate());
-        weatherDataViewHolder.setDateTextView(new SimpleDateFormat("d\\MMM").format(date));
-        weatherDataViewHolder.setDayTextView(new SimpleDateFormat("EEE").format(date).toUpperCase());
+        weatherDataViewHolder.setDateTextView(DATE_FORMAT.format(date));
+        weatherDataViewHolder.setDayTextView(DAY_FORMAT.format(date).toUpperCase());
         AssetManager manager = parent.getAssets();
         try {
             Bitmap bitmap = BitmapFactory.decodeStream(manager.open(currentWeatherData.getWeatherInfo().getIconName()));
@@ -91,9 +95,9 @@ public class WeatherDataAdapter extends RecyclerView.Adapter<WeatherDataAdapter.
         }
         views.set(i, weatherDataViewHolder.view);
         if (prevPos == i) {
-            weatherDataViewHolder.view.setBackgroundColor(0xffaba0ff);
+            weatherDataViewHolder.view.setBackgroundColor(DARK_BLUE_COLOR);
         } else {
-            weatherDataViewHolder.view.setBackgroundColor(0xff563fff);
+            weatherDataViewHolder.view.setBackgroundColor(LIGHT_BLUE_COLOR);
         }
     }
 

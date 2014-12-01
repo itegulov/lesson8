@@ -1,7 +1,7 @@
 package ru.ifmo.md.lesson8;
 
 public enum WeatherInfo {
-    CLEAR("Clear"), SNOW("Snow"), CLOUDS("Clouds"), RAIN("Rain");
+    CLEAR("Clear"), SNOW("Snow"), CLOUDS("Clouds"), RAIN("Rain"), THUNDERSTORM("Thunderstorm"), MIST("Mist");
 
     private String main;
     private String iconName;

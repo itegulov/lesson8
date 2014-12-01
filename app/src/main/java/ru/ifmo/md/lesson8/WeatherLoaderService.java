@@ -22,7 +22,7 @@ public class WeatherLoaderService extends IntentService {
     public static final int UPDATING = 2;
     public static final int ERROR = -1;
     public static final int NUMBER_OF_DAYS = 7;
-    public static final long UPDATE_INTERVAL = 10L * 60L; //Ten minutes
+    public static final long UPDATE_INTERVAL = 10L * 60L * 1000L; //Ten minutes
     private static final List<String> tasks = new ArrayList<>();
     private static Handler handler;
 

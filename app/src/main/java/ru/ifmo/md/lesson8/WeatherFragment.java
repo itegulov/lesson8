@@ -1,5 +1,6 @@
 package ru.ifmo.md.lesson8;
 
+import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
@@ -17,11 +18,9 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,6 +37,10 @@ import java.util.Date;
 public class WeatherFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String CITY_ID_EXTRA = "city_id";
     public static final String CITY_NAME_EXTRA = "city_name";
+    public static final String NO_INTERNET_CONNECTION = "No internet connection";
+    public static final String WEATHER_ALREADY_UPDATED = "Weather has already been updated";
+    public static final String UPDATING_MESSAGE = "Updating";
+    public static final SimpleDateFormat MINIMAL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMM d");
 
     private int cityId;
     private String cityName;
@@ -46,7 +49,7 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     private RecyclerView weatherRecycleView;
     private View mainView;
     private Handler handler;
-    private boolean userRequestUpdate = false;
+    private boolean needToDisplayToast = false;
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -63,7 +66,7 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
                 @Override
                 public void onItemClick(View v, int pos) {
                     adapter.setCurrentItem(pos);
-                    setDescriptionWeather(pos);
+                    setMinimalDescription(pos);
                 }
             });
             weatherRecycleView.setAdapter(adapter);
@@ -77,7 +80,7 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
             adapter.add(wc.getWeatherData());
         }
         adapter.notifyDataSetChanged();
-        setDescriptionWeather(0);
+        setMinimalDescription(0);
         setMainWeather(0);
         adapter.setCurrentItem(0);
     }
@@ -98,7 +101,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         }
         try {
             AssetManager manager = getActivity().getAssets();
-            Log.d("WeatherIcons", weatherData.getWeatherInfo().getIconName());
             Bitmap bitmap = BitmapFactory.decodeStream(manager.open(weatherData.getWeatherInfo().getIconName()));
             DisplayMetrics metrics = new DisplayMetrics();
             getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -109,9 +111,9 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         }
     }
 
-    public void setDescriptionWeather(int id) {
+    public void setMinimalDescription(int id) {
         WeatherData weatherData = adapter.getItem(id);
-        ((TextView) mainView.findViewById(R.id.dateMinTextView)).setText(new SimpleDateFormat("EEEE, MMM d").format(new Date(weatherData.getDate())));
+        ((TextView) mainView.findViewById(R.id.dateMinTextView)).setText(MINIMAL_DATE_FORMAT.format(new Date(weatherData.getDate())));
         ((TextView) mainView.findViewById(R.id.infoMinTextView)).setText(
                 "Temperature from " + weatherData.getTemperatureMin() +
                         "°C to " + weatherData.getTemperatureMax() + "°C. " + "Wind speed is " +
@@ -126,7 +128,7 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         weatherRecycleView.setAdapter(null);
     }
 
-    private boolean isOnline() {
+    private boolean checkForInternet() {
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
@@ -138,47 +140,58 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         cityId = getArguments().getInt(CITY_ID_EXTRA);
         cityName = getArguments().getString(CITY_NAME_EXTRA);
         setRetainInstance(true);
-        if (isOnline()) {
-            startLoading(false);
+        if (checkForInternet()) {
+            needToDisplayToast = false;
+            beginLoading();
         } else {
-            Toast.makeText(getActivity(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), NO_INTERNET_CONNECTION, Toast.LENGTH_SHORT).show();
         }
 
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                Log.d("WeatherHandler", "Handling a message: " + msg.toString());
-                if (msg.what == WeatherLoaderService.UPDATED) {
-                    getActivity().getLoaderManager().restartLoader(75436789, null, WeatherFragment.this);
-                    stopLoading();
-                } else if (msg.what == WeatherLoaderService.UPDATING) {
-                    getActivity().getActionBar().setSubtitle("Updating");
-                } else if (msg.what == WeatherLoaderService.ALREADY_UPDATED) {
-                    stopLoading();
-                    if (userRequestUpdate) {
-                        Toast.makeText(getActivity(), "Weather has already been updated", Toast.LENGTH_SHORT).show();
-                    }
+                switch (msg.what) {
+                    case WeatherLoaderService.UPDATED:
+                        getActivity().getLoaderManager().restartLoader(75436789, null, WeatherFragment.this);
+                        stopLoading();
+                        break;
+                    case WeatherLoaderService.ALREADY_UPDATED:
+                        if (needToDisplayToast) {
+                            Toast.makeText(getActivity(), WEATHER_ALREADY_UPDATED, Toast.LENGTH_SHORT).show();
+                        }
+                        stopLoading();
+                        break;
+                    case WeatherLoaderService.UPDATING:
+                        ActionBar actionBar = getActivity().getActionBar();
+                        if (actionBar != null) {
+                            actionBar.setSubtitle(UPDATING_MESSAGE);
+                        }
+                        break;
                 }
             }
         };
     }
 
-    public void startLoading(boolean userRequestUpdate) {
-        this.userRequestUpdate = userRequestUpdate;
+    public void beginLoading() {
         WeatherLoaderService.loadCity(getActivity(), cityName);
     }
 
     public void stopLoading() {
-        getActivity().getActionBar().setSubtitle(null);
+        ActionBar actionBar = getActivity().getActionBar();
+        if (actionBar != null) {
+            actionBar.setSubtitle(null);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_item_refresh_weather) {
-            if (!isOnline())
-                Toast.makeText(getActivity(), "Check your internet connection", Toast.LENGTH_SHORT).show();
-            else
-                startLoading(true);
+            if (!checkForInternet()) {
+                Toast.makeText(getActivity(), NO_INTERNET_CONNECTION, Toast.LENGTH_SHORT).show();
+            } else {
+                needToDisplayToast = true;
+                beginLoading();
+            }
         }
         return true;
     }
@@ -189,7 +202,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         inflater.inflate(R.menu.menu_fragment_weather, menu);
     }
 
-    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_weather, container, false);
@@ -218,6 +230,9 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         super.onPause();
 
         WeatherLoaderService.setHandler(null);
-        getActivity().getActionBar().setSubtitle(null);
+        ActionBar actionBar = getActivity().getActionBar();
+        if (actionBar != null) {
+            actionBar.setSubtitle(null);
+        }
     }
 }

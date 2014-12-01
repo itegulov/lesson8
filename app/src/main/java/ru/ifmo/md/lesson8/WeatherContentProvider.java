@@ -20,14 +20,13 @@ public class WeatherContentProvider extends ContentProvider {
             WeatherDatabaseHelper.WEATHER_TABLE_NAME;
     public static final int URI_CITY_ID = 1;
     public static final int URI_WEATHER_ID = 2;
+    public static final String WRONG_URI = "Wrong URI";
     private static final UriMatcher uriMatcher;
-
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(AUTHORITY, WeatherDatabaseHelper.CITY_TABLE_NAME, URI_CITY_ID);
         uriMatcher.addURI(AUTHORITY, WeatherDatabaseHelper.WEATHER_TABLE_NAME, URI_WEATHER_ID);
     }
-
     private WeatherDatabaseHelper dbHelper;
 
     @Override
@@ -48,7 +47,7 @@ public class WeatherContentProvider extends ContentProvider {
                 cursor.setNotificationUri(getContext().getContentResolver(), WEATHER_CONTENT_URI);
                 return cursor;
             default:
-                throw new IllegalArgumentException("Wrong URI");
+                throw new IllegalArgumentException(WRONG_URI);
         }
     }
 
@@ -60,7 +59,7 @@ public class WeatherContentProvider extends ContentProvider {
             case URI_WEATHER_ID:
                 return WEATHER_CONTENT_TYPE;
             default:
-                throw new IllegalArgumentException("Wrong URI");
+                throw new IllegalArgumentException(WRONG_URI);
         }
     }
 
@@ -78,7 +77,7 @@ public class WeatherContentProvider extends ContentProvider {
                 getContext().getContentResolver().notifyChange(result, null);
                 return result;
             default:
-                throw new IllegalArgumentException("Wrong URI");
+                throw new IllegalArgumentException(WRONG_URI);
         }
     }
 
@@ -94,7 +93,7 @@ public class WeatherContentProvider extends ContentProvider {
                 getContext().getContentResolver().notifyChange(uri, null);
                 return cnt;
             default:
-                throw new IllegalArgumentException("Wrong URI");
+                throw new IllegalArgumentException(WRONG_URI);
         }
     }
 
@@ -110,7 +109,7 @@ public class WeatherContentProvider extends ContentProvider {
                 getContext().getContentResolver().notifyChange(uri, null);
                 return cnt;
             default:
-                throw new IllegalArgumentException("Wrong URI");
+                throw new IllegalArgumentException(WRONG_URI);
         }
     }
 }

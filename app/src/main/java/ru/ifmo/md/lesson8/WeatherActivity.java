@@ -64,10 +64,10 @@ public class WeatherActivity extends Activity implements LoaderManager.LoaderCal
         if (id == -1) {
             id = 0;
         }
+
         adapter = new ArrayAdapter<>(getActionBar().getThemedContext(), android.R.layout.simple_list_item_1, android.R.id.text1, citiesName);
         getActionBar().setListNavigationCallbacks(adapter, this);
         getActionBar().setSelectedNavigationItem(id);
-        //onNavigationItemSelected(id, -1);
     }
 
     @Override

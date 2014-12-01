@@ -27,7 +27,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="17°C / 21°C"
         android:textColor="@android:color/white"
         android:textSize="@dimen/abc_text_size_display_2_material"/>
 
@@ -53,7 +52,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="91%"
                 android:textColor="@android:color/white"
                 android:textSize="@dimen/abc_text_size_large_material"/>
 
@@ -80,7 +78,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="24 km/h"
                 android:textColor="@android:color/white"
                 android:textSize="@dimen/abc_text_size_large_material"/>
 
@@ -107,7 +104,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="1028 mb"
                 android:textColor="@android:color/white"
                 android:textSize="@dimen/abc_text_size_large_material"/>
 
@@ -147,7 +143,6 @@
         android:id="@+id/dateMinTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Moday, December 1"
         android:textColor="#ff7da4ff"
         android:textSize="@dimen/abc_text_size_large_material"
         android:textStyle="bold"/>
@@ -156,7 +151,6 @@
         android:id="@+id/infoMinTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Temperature from -6°C to 3°C. Wind speed is 2 m/s. Humidity is 37%"
         android:textColor="@android:color/white"
         android:textSize="@dimen/abc_text_size_medium_material"/>
 
