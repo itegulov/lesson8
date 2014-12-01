@@ -38,7 +38,7 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     public static final String CITY_ID_EXTRA = "city_id";
     public static final String CITY_NAME_EXTRA = "city_name";
     public static final String NO_INTERNET_CONNECTION = "No internet connection";
-    public static final String WEATHER_ALREADY_UPDATED = "Weather has already been updated";
+    public static final String WEATHER_ALREADY_UPDATED = "No update is required";
     public static final String UPDATING_MESSAGE = "Updating";
     public static final SimpleDateFormat MINIMAL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMM d");
 
@@ -79,10 +79,10 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         while (cursor.moveToNext()) {
             adapter.add(wc.getWeatherData());
         }
-        adapter.notifyDataSetChanged();
         setMinimalDescription(0);
         setMainWeather(0);
         adapter.setCurrentItem(0);
+        adapter.notifyDataSetChanged();
     }
 
     public void setMainWeather(int id) {
