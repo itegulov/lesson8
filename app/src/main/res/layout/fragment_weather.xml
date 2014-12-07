@@ -130,6 +130,7 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/my_recycler_view"
+        android:tag = "horizontal"
         android:layout_width="fill_parent"
         android:layout_height="150dp"
         android:layout_gravity="top"

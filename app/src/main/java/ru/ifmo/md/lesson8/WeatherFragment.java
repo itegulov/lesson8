@@ -1,10 +1,13 @@
 package ru.ifmo.md.lesson8;
 
 import android.app.ActionBar;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -21,6 +24,7 @@ import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,6 +45,8 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     public static final String WEATHER_ALREADY_UPDATED = "No update is required";
     public static final String UPDATING_MESSAGE = "Updating";
     public static final SimpleDateFormat MINIMAL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMM d");
+    private static final String LAST_SELECTED_ID = "last_selected_id";
+    public static final String ERROR_LOADING_CITY = "Couldn't load city";
 
     private int cityId;
     private String cityName;
@@ -50,6 +56,26 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     private View mainView;
     private Handler handler;
     private boolean needToDisplayToast = false;
+    private AlertDialog intervalDialog;
+
+    public static WeatherFragment newInstance(City city) {
+        WeatherFragment fragment = new WeatherFragment();
+        Bundle args = new Bundle();
+        args.putInt(CITY_ID_EXTRA, city.getId());
+        args.putString(CITY_NAME_EXTRA, city.getName());
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public WeatherFragment() {
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        Log.d("WeatherFragment", "onAttach: " + getArguments().getString(CITY_NAME_EXTRA));
+        ((WeatherActivity) activity).onSectionAttached(getArguments().getString(CITY_NAME_EXTRA));
+    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -139,6 +165,7 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         super.onCreate(savedInstanceState);
         cityId = getArguments().getInt(CITY_ID_EXTRA);
         cityName = getArguments().getString(CITY_NAME_EXTRA);
+        Log.d("WeatherFragment", "I've got " + cityId + " " + cityName);
         setRetainInstance(true);
         if (checkForInternet()) {
             needToDisplayToast = false;
@@ -152,8 +179,10 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case WeatherLoaderService.UPDATED:
-                        getActivity().getLoaderManager().restartLoader(75436789, null, WeatherFragment.this);
-                        stopLoading();
+                        if (getActivity() != null && getActivity().getLoaderManager() != null) {
+                            getActivity().getLoaderManager().restartLoader(75436789, null, WeatherFragment.this);
+                            stopLoading();
+                        }
                         break;
                     case WeatherLoaderService.ALREADY_UPDATED:
                         if (needToDisplayToast) {
@@ -166,6 +195,10 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
                         if (actionBar != null) {
                             actionBar.setSubtitle(UPDATING_MESSAGE);
                         }
+                        break;
+                    case WeatherLoaderService.ERROR:
+                        stopLoading();
+                        Toast.makeText(getActivity(), ERROR_LOADING_CITY, Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -189,9 +222,31 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
             if (!checkForInternet()) {
                 Toast.makeText(getActivity(), NO_INTERNET_CONNECTION, Toast.LENGTH_SHORT).show();
             } else {
+                Log.d("WeatherFragment", "Refreshing!");
                 needToDisplayToast = true;
                 beginLoading();
             }
+        } else if (item.getItemId() == R.id.menu_item_alarm_management) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Interval");
+            final CharSequence[] intervals = {"Never", "1 hour", "2 hour", "6 hour", "24 hours"};
+            final int[] intervalValues = {-1, 3600 * 1000, 3600 * 2 * 1000, 3600 * 6 * 1000, 3600 * 24 * 1000};
+            int last = getActivity().getSharedPreferences(WeatherActivity.APP, Context.MODE_PRIVATE).getInt(LAST_SELECTED_ID, 0);
+            builder.setSingleChoiceItems(intervals, last, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    if (i == 0)
+                        AlarmManagerHelper.disableServiceAlarm(getActivity().getApplicationContext());
+                    else {
+                        AlarmManagerHelper.disableServiceAlarm(getActivity().getApplicationContext());
+                        AlarmManagerHelper.enableServiceAlarm(getActivity().getApplicationContext(), intervalValues[i]);
+                    }
+                    getActivity().getSharedPreferences(WeatherActivity.APP, Context.MODE_PRIVATE).edit().putInt(LAST_SELECTED_ID, i).apply();
+                    intervalDialog.dismiss();
+                }
+            });
+            intervalDialog = builder.create();
+            intervalDialog.show();
         }
         return true;
     }
@@ -208,7 +263,11 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         mainView = view;
         setHasOptionsMenu(true);
         weatherRecycleView = (RecyclerView) view.findViewById(R.id.my_recycler_view);
-        weatherRecycleView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        if (weatherRecycleView.getTag().equals("horizontal")) {
+            weatherRecycleView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        } else {
+            weatherRecycleView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
+        }
         weatherRecycleView.setHasFixedSize(true);
         if (adapter != null) {
             weatherRecycleView.setAdapter(adapter);

@@ -4,6 +4,8 @@
     <item
         android:id="@+id/menu_item_refresh_weather"
         android:icon="@android:drawable/ic_popup_sync"
-        android:showAsAction="ifRoom"
         android:title="Refresh"/>
+    <item android:id="@+id/menu_item_alarm_management"
+          android:icon="@android:drawable/ic_menu_recent_history"
+          android:title="Alarm management"/>
 </menu>
