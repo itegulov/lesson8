@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class WeatherDatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "weather_db";
-    public static final int DB_VERSION = 3;
+    public static final int DB_VERSION = 4;
 
     public static final String CITY_TABLE_NAME = "city";
     public static final String CITY_ID = "_id";

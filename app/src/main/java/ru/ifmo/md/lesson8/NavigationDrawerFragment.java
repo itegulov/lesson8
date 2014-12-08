@@ -29,9 +29,9 @@ import android.widget.ListView;
 
 public class NavigationDrawerFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    public static final City EMPTY_CITY = new City(-1, "Empty", 0);
     private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
     private static final String PREF_USER_LEARNED_DRAWER = "navigation_drawer_learned";
-
     private final int REQUEST_ADD_CITY = 0;
 
     private NavigationDrawerCallbacks mCallbacks;
@@ -66,7 +66,7 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        citiesAdapter.add(new City(-1, "Empty", 0));
+        citiesAdapter.add(EMPTY_CITY);
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
@@ -250,6 +250,9 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
         while (cursor.moveToNext()) {
             City c = WeatherDatabaseHelper.CityCursor.getCity(cursor);
             citiesAdapter.add(c);
+        }
+        if (citiesAdapter.getCount() == 0) {
+            citiesAdapter.add(EMPTY_CITY);
         }
         mDrawerListView.setAdapter(citiesAdapter);
         mDrawerListView.setItemChecked(citiesAdapter.getSelected(), true);
