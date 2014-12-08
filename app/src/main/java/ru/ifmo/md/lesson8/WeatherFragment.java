@@ -45,9 +45,8 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     public static final String WEATHER_ALREADY_UPDATED = "No update is required";
     public static final String UPDATING_MESSAGE = "Updating";
     public static final SimpleDateFormat MINIMAL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMM d");
-    private static final String LAST_SELECTED_ID = "last_selected_id";
     public static final String ERROR_LOADING_CITY = "Couldn't load city";
-
+    private static final String LAST_SELECTED_ID = "last_selected_id";
     private int cityId;
     private String cityName;
 
@@ -58,6 +57,9 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     private boolean needToDisplayToast = false;
     private AlertDialog intervalDialog;
 
+    public WeatherFragment() {
+    }
+
     public static WeatherFragment newInstance(City city) {
         WeatherFragment fragment = new WeatherFragment();
         Bundle args = new Bundle();
@@ -65,9 +67,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         args.putString(CITY_NAME_EXTRA, city.getName());
         fragment.setArguments(args);
         return fragment;
-    }
-
-    public WeatherFragment() {
     }
 
     @Override
@@ -144,7 +143,7 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
                 "Temperature from " + weatherData.getTemperatureMin() +
                         "°C to " + weatherData.getTemperatureMax() + "°C. " + "Wind speed is " +
                         weatherData.getWindSpeed() + " m/s. " + "Pressure is " +
-                        weatherData.getPressure() + "." + (weatherData.getHumidity() == 0 ? "" :
+                        weatherData.getPressure() + " mb." + (weatherData.getHumidity() == 0 ? "" :
                         " Humidity is " + weatherData.getHumidity() + "%."));
     }
 
@@ -210,9 +209,11 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     public void stopLoading() {
-        ActionBar actionBar = getActivity().getActionBar();
-        if (actionBar != null) {
-            actionBar.setSubtitle(null);
+        if (getActivity() != null) {
+            ActionBar actionBar = getActivity().getActionBar();
+            if (actionBar != null) {
+                actionBar.setSubtitle(null);
+            }
         }
     }
 

@@ -1,22 +1,21 @@
 package ru.ifmo.md.lesson8;
 
-import android.content.Intent;
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
-import android.database.Cursor;
-import android.app.Activity;
-import android.app.ActionBar;
-import android.app.Fragment;
-import android.os.Handler;
-import android.os.Message;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.widget.DrawerLayout;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
-import android.util.Log;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,13 +24,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class NavigationDrawerFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -46,13 +40,25 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
 
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerListView;
-    private View mFragmentContainerView;
+    private Handler selectHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message message) {
+            int position = message.what;
+            citiesAdapter.setSelected(position);
+            if (mDrawerListView != null) {
+                mDrawerListView.setItemChecked(position, true);
+            }
 
-    private int mCurrentSelectedPosition = 0;
+            if (mCallbacks != null) {
+                mCallbacks.onNavigationDrawerItemSelected(position, citiesAdapter.getItem(position));
+            }
+            return true;
+        }
+    });
+    private View mFragmentContainerView;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
-    private List<String> citiesName = new ArrayList<>();
-    private List<City> cities = new ArrayList<>();
+    private CitiesAdapter citiesAdapter = new CitiesAdapter();
 
     public NavigationDrawerFragment() {
     }
@@ -60,29 +66,26 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        cities.add(new City(-1, "Empty", 0));
-        // Read in the flag indicating whether or not the user has demonstrated awareness of the
-        // drawer. See PREF_USER_LEARNED_DRAWER for details.
+        citiesAdapter.add(new City(-1, "Empty", 0));
+
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
 
         if (savedInstanceState != null) {
-            mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
+            citiesAdapter.setSelected(savedInstanceState.getInt(STATE_SELECTED_POSITION));
             mFromSavedInstanceState = true;
         }
 
-        // Select either the default item (0) or the last selected item.
         getLoaderManager().restartLoader(345738, null, this);
-        if (mCurrentSelectedPosition >= cities.size()) {
-            mCurrentSelectedPosition = 0;
+        if (citiesAdapter.getSelected() >= citiesAdapter.getCount()) {
+            citiesAdapter.setSelected(0);
         }
-        selectHandler.sendEmptyMessage(mCurrentSelectedPosition);
+        selectHandler.sendEmptyMessage(citiesAdapter.getSelected());
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // Indicate that this fragment would like to influence the set of actions in the action bar.
         setHasOptionsMenu(true);
     }
 
@@ -93,6 +96,7 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                citiesAdapter.setSelected(position);
                 selectHandler.sendEmptyMessage(position);
             }
         });
@@ -100,7 +104,7 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
                 if (mCallbacks != null) {
-                    mCallbacks.onNavigationDrawerItemLongSelected(position, cities.get(position));
+                    mCallbacks.onNavigationDrawerItemLongSelected(position, citiesAdapter.getItem(position));
                     getLoaderManager().restartLoader(23984, null, NavigationDrawerFragment.this);
                     return true;
                 }
@@ -111,7 +115,6 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
         addCityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("NavigationDrawerFragment", "Begining activity for result");
                 startActivityForResult(new Intent(getActivity(), AddCity.class), REQUEST_ADD_CITY);
             }
         });
@@ -125,6 +128,7 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
                 String name = data.getStringExtra(AddCity.CITY_ADDED_NAME);
                 getActivity().getContentResolver().insert(WeatherContentProvider.CITY_CONTENT_URI, new City(-1, name, 0).getContentValues());
                 getLoaderManager().restartLoader(0, null, this);
+                citiesAdapter.setSelected(citiesAdapter.getCount());
             }
         }
     }
@@ -137,25 +141,15 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
         mFragmentContainerView = getActivity().findViewById(fragmentId);
         mDrawerLayout = drawerLayout;
 
-        // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
-        // set up the drawer's list view with items and click listener
 
         ActionBar actionBar = getActivity().getActionBar();
-        try {
+        if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
-        } catch (NullPointerException e) {
-            e.printStackTrace();
         }
 
-        // ActionBarDrawerToggle ties together the the proper interactions
-        // between the navigation drawer and the action bar app icon.
-        mDrawerToggle = new ActionBarDrawerToggle(getActivity(),                    /* host Activity */
-                mDrawerLayout,                    /* DrawerLayout object */
-                R.drawable.ic_drawer,             /* nav drawer image to replace 'Up' caret */
-                R.string.navigation_drawer_open,  /* "open drawer" description for accessibility */
-                R.string.navigation_drawer_close  /* "close drawer" description for accessibility */) {
+        mDrawerToggle = new ActionBarDrawerToggle(getActivity(), mDrawerLayout, R.drawable.ic_drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
@@ -196,23 +190,6 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
-    private Handler selectHandler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message message) {
-            int position = message.what;
-            mCurrentSelectedPosition = position;
-            if (mDrawerListView != null) {
-                mDrawerListView.setItemChecked(position, true);
-            }
-            if (mDrawerLayout != null) {
-                mDrawerLayout.closeDrawer(mFragmentContainerView);
-            }
-            if (mCallbacks != null) {
-                mCallbacks.onNavigationDrawerItemSelected(position, cities.get(position));
-            }
-            return true;
-        }
-    });
 
     @Override
     public void onAttach(Activity activity) {
@@ -233,7 +210,7 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
+        outState.putInt(STATE_SELECTED_POSITION, citiesAdapter.getSelected());
     }
 
     @Override
@@ -245,7 +222,6 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         if (mDrawerLayout != null && isDrawerOpen()) {
-            inflater.inflate(R.menu.global, menu);
             showGlobalContextActionBar();
         }
         super.onCreateOptionsMenu(menu, inflater);
@@ -253,22 +229,14 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        if (item.getItemId() == R.id.action_example) {
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     private void showGlobalContextActionBar() {
         ActionBar actionBar = getActivity().getActionBar();
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(true);
+        }
     }
 
     @Override
@@ -278,21 +246,18 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        cities.clear();
-        citiesName.clear();
+        citiesAdapter.clear();
         while (cursor.moveToNext()) {
             City c = WeatherDatabaseHelper.CityCursor.getCity(cursor);
-            cities.add(c);
-            citiesName.add(c.getName());
+            citiesAdapter.add(c);
         }
-
-        ArrayAdapter<String> cityArrayAdapter = new ArrayAdapter<>(getActivity().getActionBar().getThemedContext(), android.R.layout.simple_list_item_1, android.R.id.text1, citiesName);
-        mDrawerListView.setAdapter(cityArrayAdapter);
-        mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
-        if (mCurrentSelectedPosition >= cities.size()) {
-            mCurrentSelectedPosition = 0;
+        mDrawerListView.setAdapter(citiesAdapter);
+        mDrawerListView.setItemChecked(citiesAdapter.getSelected(), true);
+        if (citiesAdapter.getSelected() >= citiesAdapter.getCount()) {
+            citiesAdapter.setSelected(0);
         }
-        selectHandler.sendEmptyMessage(mCurrentSelectedPosition);
+        selectHandler.sendEmptyMessage(citiesAdapter.getSelected());
+        citiesAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -300,13 +265,7 @@ public class NavigationDrawerFragment extends Fragment implements LoaderManager.
 
     }
 
-    /**
-     * Callbacks interface that all activities using this fragment must implement.
-     */
     public static interface NavigationDrawerCallbacks {
-        /**
-         * Called when an item in the navigation drawer is selected.
-         */
         void onNavigationDrawerItemSelected(int position, City city);
         void onNavigationDrawerItemLongSelected(int position, City city);
     }

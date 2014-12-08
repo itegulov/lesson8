@@ -3,6 +3,7 @@ package ru.ifmo.md.lesson8;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,9 +12,9 @@ import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.app.FragmentManager;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.DrawerLayout;
 
 public class WeatherActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -66,21 +67,25 @@ public class WeatherActivity extends Activity implements NavigationDrawerFragmen
             }
         }));
         Location lastKnown = ((LocationManager) getSystemService(Context.LOCATION_SERVICE)).getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-        startService(new Intent(getApplicationContext(), CityNameGetService.class)
-                .putExtra(CityNameGetService.LAT_EXTRA, lastKnown.getLatitude())
-                .putExtra(CityNameGetService.LON_EXTRA, lastKnown.getLongitude()));
+        if (lastKnown != null) {
+            startService(new Intent(getApplicationContext(), CityNameGetService.class).putExtra(CityNameGetService.LAT_EXTRA, lastKnown.getLatitude()).putExtra(CityNameGetService.LON_EXTRA, lastKnown.getLongitude()));
+        }
         ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(true);
+        }
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
     }
 
     public void onSectionAttached(String name) {
-        getActionBar().setTitle(name);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(name);
+        }
     }
 
     @Override

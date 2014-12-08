@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 public class WeatherDataAdapter extends RecyclerView.Adapter<WeatherDataAdapter.WeatherDataViewHolder> {
-    public static final int LIGHT_BLUE_COLOR = 0xff563fff;
+    public static final int LIGHT_BLUE_COLOR = 0xff4767bb;
     public static final int DARK_BLUE_COLOR = 0xffaba0ff;
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d\\MMM");
     public static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("EEE");
