@@ -108,12 +108,16 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         setMainWeather(0);
         adapter.setCurrentItem(0);
         adapter.notifyDataSetChanged();
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            weatherRecycleView.getLayoutParams().height = 235 * adapter.getItemCount();
+        }
     }
 
     public void setMainWeather(int id) {
         WeatherData weatherData = adapter.getItem(id);
         ((TextView) mainView.findViewById(R.id.temperatureTextView)).setText(
-                weatherData.getTemperatureMin() + "°C/" + weatherData.getTemperatureMax() + "°C");
+                WeatherData.formatTemperature(weatherData.getTemperatureMin()) + " \\ " +
+                WeatherData.formatTemperature(weatherData.getTemperatureMax()));
         ((TextView) mainView.findViewById(R.id.pressureTextView)).setText(
                 weatherData.getPressure() + " mb");
         ((TextView) mainView.findViewById(R.id.windTextView)).setText(
@@ -264,11 +268,12 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         mainView = view;
         setHasOptionsMenu(true);
         weatherRecycleView = (RecyclerView) view.findViewById(R.id.my_recycler_view);
-        if (weatherRecycleView.getTag().equals("horizontal")) {
-            weatherRecycleView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-        } else {
+        weatherRecycleView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
+        //if (weatherRecycleView.getTag().equals("horizontal")) {
+        //    weatherRecycleView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        //} else {
             weatherRecycleView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
-        }
+        //}
         weatherRecycleView.setHasFixedSize(true);
         if (adapter != null) {
             weatherRecycleView.setAdapter(adapter);

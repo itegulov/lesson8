@@ -2,12 +2,11 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:background="#cc777ecc"
-              android:divider="@android:color/transparent"
+    android:divider="@android:color/transparent"
               android:dividerHeight="0dp"
               android:orientation="vertical"
               tools:context=".NavigationDrawerFragment"
-    >
+    android:background="@color/primary">
 
     <Button
         android:id="@+id/addCityButton"
@@ -21,8 +20,7 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="fill_parent"
               android:layout_height="match_parent"
-              android:background="#cc777ecc"
-              android:choiceMode="singleChoice"
+        android:choiceMode="singleChoice"
               android:divider="@android:color/transparent"
               android:dividerHeight="0dp"
               tools:context="ru.ifmo.md.lesson8.NavigationDrawerFragment"/>

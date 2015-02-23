@@ -6,6 +6,6 @@
         android:id="@+id/item_detail"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:textColor="@android:color/white"
-        android:textSize="@dimen/abc_text_size_large_material"/>
+        android:textSize="@dimen/abc_text_size_large_material"
+        android:alpha="0.87" />
 </FrameLayout>

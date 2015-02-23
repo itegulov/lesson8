@@ -60,7 +60,7 @@ public class CitiesAdapter extends BaseAdapter {
         itemDetail.setText(cityList.get(i).getName());
         Log.d("CitiesAdapter", "City: " + cityList.get(i).getName());
         if (i == selected) {
-            itemDetail.setBackgroundColor(Color.LTGRAY);
+            itemDetail.setBackgroundColor(Color.parseColor("#1E88E5"));
         } else {
             itemDetail.setBackgroundColor(Color.TRANSPARENT);
         }
