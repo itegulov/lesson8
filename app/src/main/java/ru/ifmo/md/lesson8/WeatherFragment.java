@@ -34,6 +34,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.levelupstudio.recyclerview.ExpandableRecyclerView;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -53,7 +55,36 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     private WeatherDataAdapter adapter;
     private RecyclerView weatherRecycleView;
     private View mainView;
-    private Handler handler;
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case WeatherLoaderService.UPDATED:
+                    if (getActivity() != null && getActivity().getLoaderManager() != null) {
+                        getActivity().getLoaderManager().restartLoader(75436789, null, WeatherFragment.this);
+                        stopLoading();
+                    }
+                    break;
+                case WeatherLoaderService.ALREADY_UPDATED:
+                    if (needToDisplayToast) {
+                        Toast.makeText(getActivity(), WEATHER_ALREADY_UPDATED, Toast.LENGTH_SHORT).show();
+                    }
+                    stopLoading();
+                    break;
+                case WeatherLoaderService.UPDATING:
+                    ActionBar actionBar = getActivity().getActionBar();
+                    if (actionBar != null) {
+                        actionBar.setSubtitle(UPDATING_MESSAGE);
+                    }
+                    break;
+                case WeatherLoaderService.ERROR:
+                    stopLoading();
+                    Toast.makeText(getActivity(), ERROR_LOADING_CITY, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
+
     private boolean needToDisplayToast = false;
     private AlertDialog intervalDialog;
 
@@ -108,8 +139,10 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         setMainWeather(0);
         adapter.setCurrentItem(0);
         adapter.notifyDataSetChanged();
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            weatherRecycleView.getLayoutParams().height = 235 * adapter.getItemCount();
+        if (getResources() != null && getResources().getConfiguration() != null) {
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                weatherRecycleView.getLayoutParams().height = 235 * adapter.getItemCount();
+            }
         }
     }
 
@@ -176,36 +209,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         } else {
             Toast.makeText(getActivity(), NO_INTERNET_CONNECTION, Toast.LENGTH_SHORT).show();
         }
-
-        handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case WeatherLoaderService.UPDATED:
-                        if (getActivity() != null && getActivity().getLoaderManager() != null) {
-                            getActivity().getLoaderManager().restartLoader(75436789, null, WeatherFragment.this);
-                            stopLoading();
-                        }
-                        break;
-                    case WeatherLoaderService.ALREADY_UPDATED:
-                        if (needToDisplayToast) {
-                            Toast.makeText(getActivity(), WEATHER_ALREADY_UPDATED, Toast.LENGTH_SHORT).show();
-                        }
-                        stopLoading();
-                        break;
-                    case WeatherLoaderService.UPDATING:
-                        ActionBar actionBar = getActivity().getActionBar();
-                        if (actionBar != null) {
-                            actionBar.setSubtitle(UPDATING_MESSAGE);
-                        }
-                        break;
-                    case WeatherLoaderService.ERROR:
-                        stopLoading();
-                        Toast.makeText(getActivity(), ERROR_LOADING_CITY, Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        };
     }
 
     public void beginLoading() {
