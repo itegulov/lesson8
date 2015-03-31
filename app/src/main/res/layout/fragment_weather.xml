@@ -137,21 +137,5 @@
             android:layout_gravity="top"
             android:tag="horizontal"/>
 
-        <TextView
-            android:id="@+id/dateMinTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:textColor="@color/additionalTextColor"
-            android:textSize="@dimen/abc_text_size_large_material"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/infoMinTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:alpha="0.54" />
     </LinearLayout>
 </ScrollView>

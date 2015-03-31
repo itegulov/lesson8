@@ -18,12 +18,8 @@
             android:id="@+id/iconWeatherBig"
             android:layout_width="128dp"
             android:layout_height="128dp"
-            android:contentDescription="@string/weather_icon"/>
-
-        <Space
-            android:layout_width="10dp"
-            android:layout_height="30dp"
-            />
+            android:contentDescription="@string/weather_icon"
+        android:layout_gravity="center_horizontal" />
 
         <TextView
             android:id="@+id/temperatureTextView"
@@ -139,33 +135,9 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-        <TextView
-                android:id="@+id/dateMinTextView"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/additionalTextColor"
-                android:textSize="@dimen/abc_text_size_large_material"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:id="@+id/infoMinTextView"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/abc_text_size_medium_material"
-                android:alpha="0.87" />
-        </LinearLayout>
-
-        <Space
-            android:layout_width="20dp"
-            android:layout_height="10dp"/>
+        android:orientation="horizontal"
+        android:layout_gravity="right"
+        android:gravity="right">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/my_recycler_view"
@@ -173,7 +145,7 @@
             android:layout_height="fill_parent"
             android:minWidth="150dp"
             android:tag="vertical"
-            />
+            android:layout_gravity="right" />
     </LinearLayout>
 
 </LinearLayout>

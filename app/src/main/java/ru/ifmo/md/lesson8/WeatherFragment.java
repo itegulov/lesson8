@@ -34,11 +34,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.levelupstudio.recyclerview.ExpandableRecyclerView;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class WeatherFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String CITY_ID_EXTRA = "city_id";
@@ -46,7 +45,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     public static final String NO_INTERNET_CONNECTION = "No internet connection";
     public static final String WEATHER_ALREADY_UPDATED = "No update is required";
     public static final String UPDATING_MESSAGE = "Updating";
-    public static final SimpleDateFormat MINIMAL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMM d");
     public static final String ERROR_LOADING_CITY = "Couldn't load city";
     private static final String LAST_SELECTED_ID = "last_selected_id";
     private int cityId;
@@ -118,13 +116,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         if (adapter == null) {
             adapter = new WeatherDataAdapter(getActivity());
-            adapter.setOnItemClickListener(new WeatherDataAdapter.OnItemClickListener() {
-                @Override
-                public void onItemClick(View v, int pos) {
-                    adapter.setCurrentItem(pos);
-                    setMinimalDescription(pos);
-                }
-            });
             weatherRecycleView.setAdapter(adapter);
         }
         if (cursor.isAfterLast()) {
@@ -135,9 +126,7 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         while (cursor.moveToNext()) {
             adapter.add(wc.getWeatherData());
         }
-        setMinimalDescription(0);
         setMainWeather(0);
-        adapter.setCurrentItem(0);
         adapter.notifyDataSetChanged();
         if (getResources() != null && getResources().getConfiguration() != null) {
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -171,17 +160,6 @@ public class WeatherFragment extends Fragment implements LoaderManager.LoaderCal
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         }
-    }
-
-    public void setMinimalDescription(int id) {
-        WeatherData weatherData = adapter.getItem(id);
-        ((TextView) mainView.findViewById(R.id.dateMinTextView)).setText(MINIMAL_DATE_FORMAT.format(new Date(weatherData.getDate())));
-        ((TextView) mainView.findViewById(R.id.infoMinTextView)).setText(
-                "Temperature from " + weatherData.getTemperatureMin() +
-                        "°C to " + weatherData.getTemperatureMax() + "°C. " + "Wind speed is " +
-                        weatherData.getWindSpeed() + " m/s. " + "Pressure is " +
-                        weatherData.getPressure() + " mb." + (weatherData.getHumidity() == 0 ? "" :
-                        " Humidity is " + weatherData.getHumidity() + "%."));
     }
 
     @Override
