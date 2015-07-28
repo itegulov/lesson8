@@ -2,94 +2,100 @@ package ru.ifmo.md.lesson8;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
-import android.content.Loader;
+import android.app.AlertDialog;
+import android.app.FragmentManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
-import android.view.Window;
-import android.widget.ArrayAdapter;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.widget.DrawerLayout;
 
-import java.util.ArrayList;
-
-
-public class WeatherActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>, ActionBar.OnNavigationListener {
-    public static final String CITY_ID_EXTRA = "city_id";
-
-    private int cityId = -1;
-    private ArrayList<City> cities = new ArrayList<>();
-    private ArrayAdapter<String> adapter;
-    private ArrayList<String> citiesName = new ArrayList<>();
-
+public class WeatherActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+    public static final String APP = "ru.ifmo.md.lesson8";
+    public static final String CURRENT_CITY = APP + ".current_city";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
         setContentView(R.layout.activity_weather);
-        if (savedInstanceState != null) {
-            cityId = savedInstanceState.getInt(CITY_ID_EXTRA);
-        }
-        getLoaderManager().restartLoader(345738, null, this);
-        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-    }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(CITY_ID_EXTRA, cityId);
-    }
+        NavigationDrawerFragment mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this, WeatherContentProvider.CITY_CONTENT_URI, null, null, null, null);
-    }
+        mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
+        CityNameGetService.setHandler(new Handler(new Handler.Callback() {
+            private AlertDialog alertDialog;
+            @Override
+            public boolean handleMessage(Message message) {
+                final City city = (City) message.obj;
+                SharedPreferences prefs = getSharedPreferences(APP, Context.MODE_PRIVATE);
+                String previousCity = prefs.getString(CURRENT_CITY, "");
+                if (!previousCity.equals(city.getName())) {
+                    Cursor cur = getContentResolver().query(WeatherContentProvider.CITY_CONTENT_URI, null,
+                            WeatherDatabaseHelper.CITY_NAME + " = '" + city.getName() + "'", null, null);
+                    cur.moveToNext();
+                    if (cur.isAfterLast()) {
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(WeatherActivity.this);
+                        alertDialogBuilder.setTitle("Auto-geolocation");
+                        alertDialogBuilder.setMessage("Your current location is " + city.getName() + ". " +
+                                "Do you want to add " + city.getName() +
+                                " in list of your cities?");
+                        alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                getContentResolver().insert(WeatherContentProvider.CITY_CONTENT_URI, city.getContentValues());
+                            }
+                        });
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        int id = -1;
-        cities.clear();
-        citiesName.clear();
-        while (cursor.moveToNext()) {
-            City c = WeatherDatabaseHelper.CityCursor.getCity(cursor);
-            cities.add(c);
-            citiesName.add(c.getName());
-        }
-        for (int i = 0; i < cities.size(); ++i) {
-            if (cities.get(i).getId() == cityId) {
-                id = i;
+                        alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                alertDialog.dismiss();
+                            }
+                        });
+                        alertDialog = alertDialogBuilder.create();
+                        alertDialog.show();
+                    }
+                }
+                return true;
             }
+        }));
+        Location lastKnown = ((LocationManager) getSystemService(Context.LOCATION_SERVICE)).getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+        if (lastKnown != null) {
+            startService(new Intent(getApplicationContext(), CityNameGetService.class).putExtra(CityNameGetService.LAT_EXTRA, lastKnown.getLatitude()).putExtra(CityNameGetService.LON_EXTRA, lastKnown.getLongitude()));
         }
-
-        if (id == -1) {
-            id = 0;
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(true);
         }
-
-        adapter = new ArrayAdapter<>(getActionBar().getThemedContext(), android.R.layout.simple_list_item_1, android.R.id.text1, citiesName);
-        getActionBar().setListNavigationCallbacks(adapter, this);
-        getActionBar().setSelectedNavigationItem(id);
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        adapter = null;
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    public void onSectionAttached(String name) {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(name);
+        }
     }
 
     @Override
-    public boolean onNavigationItemSelected(int i, long l) {
-        android.app.Fragment f = getFragmentManager().findFragmentById(R.id.container);
-        if (f == null ||
-                f.getArguments() == null ||
-                f.getArguments().getInt(WeatherFragment.CITY_ID_EXTRA) != cities.get(i).getId()) {
-            cityId = cities.get(i).getId();
+    public void onNavigationDrawerItemSelected(int position, City city) {
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.container, WeatherFragment.newInstance(city)).commit();
+    }
 
-            android.app.Fragment fragment = new WeatherFragment();
-            Bundle args = new Bundle();
-            args.putInt(WeatherFragment.CITY_ID_EXTRA, cities.get(i).getId());
-            args.putString(WeatherFragment.CITY_NAME_EXTRA, cities.get(i).getName());
-            fragment.setArguments(args);
-            getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
-        }
-        return true;
+    @Override
+    public void onNavigationDrawerItemLongSelected(int position, City city) {
+        getContentResolver().delete(WeatherContentProvider.CITY_CONTENT_URI, WeatherDatabaseHelper.CITY_ID + " = " + city.getId(), null);
     }
 }

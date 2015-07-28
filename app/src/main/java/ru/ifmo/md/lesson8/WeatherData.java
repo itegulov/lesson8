@@ -25,6 +25,16 @@ public class WeatherData {
         this.weatherInfo = WeatherInfo.getWeatherInfo(weatherInfo);
     }
 
+    static String formatTemperature(int temperature) {
+        StringBuilder sb = new StringBuilder();
+        if (temperature >= 0) {
+            sb.append("+");
+        }
+        sb.append(Integer.toString(temperature));
+        sb.append("°C");
+        return sb.toString();
+    }
+
     public int getTemperatureMin() {
         return temperatureMin;
     }

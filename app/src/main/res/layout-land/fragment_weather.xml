@@ -1,39 +1,35 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:orientation="horizontal"
+              android:paddingBottom="@dimen/activity_vertical_margin"
+              android:paddingLeft="@dimen/activity_horizontal_margin"
               android:paddingRight="@dimen/activity_horizontal_margin"
               android:paddingTop="@dimen/activity_vertical_margin"
-              tools:context="ru.ifmo.md.lesson8.WeatherActivity$PlaceholderFragment"
-    style="@style/scrollStyle">
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+              tools:context="ru.ifmo.md.lesson8.WeatherActivity$PlaceholderFragment">
 
-        <ImageView
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
+
+    <ImageView
             android:id="@+id/iconWeatherBig"
             android:layout_width="128dp"
             android:layout_height="128dp"
-            android:layout_gravity="center_horizontal"
-            android:contentDescription="@string/weather_icon"/>
-
-        <Space
-            android:layout_width="10dp"
-            android:layout_height="30dp"
-            />
+            android:contentDescription="@string/weather_icon"
+        android:layout_gravity="center_horizontal" />
 
         <TextView
             android:id="@+id/temperatureTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
             android:textSize="@dimen/abc_text_size_display_2_material"
             android:alpha="0.87" />
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
             android:orientation="horizontal">
@@ -62,7 +58,13 @@
                     android:textColor="@color/additionalTextColor"
                     android:textSize="@dimen/abc_text_size_medium_material"
                     android:textStyle="bold"/>
+
             </LinearLayout>
+
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                />
 
             <LinearLayout
                 android:layout_width="fill_parent"
@@ -89,6 +91,11 @@
                     android:textSize="@dimen/abc_text_size_medium_material"
                     android:textStyle="bold"/>
             </LinearLayout>
+
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                />
 
             <LinearLayout
                 android:layout_width="fill_parent"
@@ -118,24 +125,27 @@
 
         </LinearLayout>
 
-        <Space
-            android:layout_width="10dp"
-            android:layout_height="30dp"/>
+    </LinearLayout>
 
-        <ImageView
-            android:id="@+id/separatorImageView"
-            android:layout_width="fill_parent"
-            android:layout_height="5dp"
-            android:layout_gravity="center_horizontal"
-            android:contentDescription="@string/separatorContent"
-            android:src="@drawable/separator"/>
+    <Space
+        android:layout_width="20dp"
+        android:layout_height="10dp"
+        />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="right"
+        android:gravity="right">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/my_recycler_view"
-            android:layout_width="fill_parent"
-            android:layout_height="150dp"
-            android:layout_gravity="top"
-            android:tag="horizontal"/>
-
+            android:layout_width="250dp"
+            android:layout_height="fill_parent"
+            android:minWidth="150dp"
+            android:tag="vertical"
+            android:layout_gravity="right" />
     </LinearLayout>
-</ScrollView>
+
+</LinearLayout>

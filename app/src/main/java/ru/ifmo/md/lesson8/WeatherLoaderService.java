@@ -7,9 +7,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
 
-import java.util.ArrayList;
+import org.json.JSONException;
+
 import java.util.Date;
-import java.util.List;
 
 public class WeatherLoaderService extends IntentService {
     public static final String API_KEY = "af1fd362b895c36e1a37e182defcf246";
@@ -23,7 +23,6 @@ public class WeatherLoaderService extends IntentService {
     public static final int ERROR = -1;
     public static final int NUMBER_OF_DAYS = 7;
     public static final long UPDATE_INTERVAL = 10L * 60L * 1000L; //Ten minutes
-    private static final List<String> tasks = new ArrayList<>();
     private static Handler handler;
 
     public WeatherLoaderService() {
@@ -39,15 +38,6 @@ public class WeatherLoaderService extends IntentService {
     }
 
     @Override
-    public void onStart(Intent intent, int startId) {
-        String cityName = intent.getStringExtra(CITY_NAME);
-        if (!tasks.contains(cityName)) {
-            tasks.add(cityName);
-            super.onStart(intent, startId);
-        }
-    }
-
-    @Override
     protected void onHandleIntent(Intent intent) {
         String cityName = intent.getStringExtra(CITY_NAME);
         Cursor cursor = getApplicationContext().getContentResolver().
@@ -55,8 +45,6 @@ public class WeatherLoaderService extends IntentService {
                         WeatherDatabaseHelper.CITY_NAME + " = '" + cityName + "'", null, null);
         cursor.moveToNext();
         if (cursor.isAfterLast()) {
-            //Delete first element
-            tasks.remove(0);
             return;
         }
 
@@ -66,8 +54,6 @@ public class WeatherLoaderService extends IntentService {
                 //It's already updated, so we don't need to do anything
                 handler.obtainMessage(ALREADY_UPDATED).sendToTarget();
             }
-            //Delete first element
-            tasks.remove(0);
             return;
         }
 
@@ -76,9 +62,16 @@ public class WeatherLoaderService extends IntentService {
             handler.obtainMessage(UPDATING).sendToTarget();
         }
 
-        //TODO: implement
-
-        WeatherData[] weatherData = loadWeatherInCity(city);
+        WeatherData[] weatherData;
+        try {
+            weatherData = loadWeatherInCity(city);
+        } catch (JSONException e) {
+            if (handler != null) {
+                //We successfully updated the database
+                handler.obtainMessage(ERROR).sendToTarget();
+            }
+            return;
+        }
         if (update(weatherData, city)) {
             if (handler != null) {
                 //We successfully updated the database
@@ -90,10 +83,9 @@ public class WeatherLoaderService extends IntentService {
                 handler.obtainMessage(ERROR).sendToTarget();
             }
         }
-        tasks.remove(0); //Proceeded one task
     }
 
-    private WeatherData[] loadWeatherInCity(City city) {
+    public static WeatherData[] loadWeatherInCity(City city) throws JSONException {
         return FetchWeatherTask.fetch(city, NUMBER_OF_DAYS, API_KEY);
     }
 
